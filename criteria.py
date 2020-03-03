@@ -51,7 +51,7 @@ class berHuLoss(nn.Module):
         Loss_1 = abs_error[abs_error <= Burhu_c]
         Loss_2 = (abs_error[abs_error > Burhu_c] ** 2 + Burhu_c ** 2) / (2 * Burhu_c)
 
-        self.loss = torch.cat(Loss_1, Loss_2).mean()
+        self.loss = torch.cat((Loss_1, Loss_2)).mean()
 
         return self.loss
 
