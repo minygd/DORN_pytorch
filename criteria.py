@@ -39,22 +39,19 @@ class berHuLoss(nn.Module):
         super(berHuLoss, self).__init__()
 
     def forward(self, pred, target):
-        assert pred.dim() == target.dim(), "inconsistent dimensions"
+        assert pred.dim() == target.dim(), "Inconsistent Dimentions"
 
-        huber_c = torch.max(pred - target)
-        huber_c = 0.2 * huber_c
+        # The calculation validate only if the target > 0
+        valid = (target > 0).detach()
+        error = pred - target
+        abs_error  = error[valid].abs()
 
-        valid_mask = (target > 0).detach()
-        diff = target - pred
-        diff = diff[valid_mask]
-        diff = diff.abs()
+        Burhu_c = 0.2 * torch.max(abs_error).detach()
 
-        huber_mask = (diff > huber_c).detach()
+        Loss_1 = abs_error[abs_error <= Burhu_c]
+        Loss_2 = (abs_error[abs_error > Burhu_c] ** 2 + Burhu_c ** 2) / (2 * Burhu_c)
 
-        diff2 = diff[huber_mask]
-        diff2 = diff2 ** 2
-
-        self.loss = torch.cat((diff, diff2)).mean()
+        self.loss = torch.cat(Loss_1 + Loss_2).mean()
 
         return self.loss
 
